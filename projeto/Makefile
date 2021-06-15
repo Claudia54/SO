@@ -1,44 +1,25 @@
+all: server client
 
-CC    	= gcc
-BIN_DIR = bin
-SRC_DIR = src
-OBJ_DIR = obj
-TMP_DIR = tmp
-FILES 	= $(shell ls $(SRC_DIR)/*.c)
-OBJS  	= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(FILES))
+server: bin/aurrasd
 
+client: bin/aurras
 
-vpath %.c $(SRC_DIR)
+bin/aurrasd: obj/aurrasd.o
+    gcc -g obj/aurrasd.o -o bin/aurrasd
 
-.DEFAULT_GOAL = build
+obj/aurrasd.o: src/aurrasd.c
+    gcc -Wall -g -c src/aurrasd.c obj/aurrasd.o
 
-$(OBJ_DIR)/%.o: %.c
-	$(CC) -Wall -g -c $^ -o $@
+bin/aurras: obj/aurras.o
+    gcc -g obj/aurras.o -o bin/aurras
 
-$(BIN_DIR): $(OBJS)
-	$(CC) -g $^ -o $@
+obj/aurras.o: src/aurras.c
+    gcc -Wall -g -c src/aurras.c obj/aurras.o
 
-setup:
-	@mkdir -p $(BIN_DIR)
-	@mkdir -p $(SRC_DIR)
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(TMP_DIR)
-
-.PHONY: test # Run the tests
+clean:
+    rm obj/* tmp/* bin/{aurras,aurrasd}
+    
 test:
-	#@echo "Write some tests!"
-	bin/aurras
-	bin/aurras status
-	bin/aurras transform samples/sample-1.m4a output.m4a alto eco rapido
-
-.PHONY: b, build # Compilar o binário
-b build: setup 
-	
-.PHONY: c, clean # Remover ficheiros gerados
-c clean:
-	@rm -r $(BIN_DIR) $(OBJ_DIR) $(TMP_DIR)
-
-.PHONY: man, help # Generate list of targets with descriptions
-man help:
-	@echo -------------------------------------------------------------------+
-	@grep '^.PHONY: .* #' Makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/    \1 \t: \2\n-------------------------------------------------------------------+/'
+    bin/aurras
+    bin/aurras status
+    bin/aurras transform samples/sample-1.m4a output.m4a alto eco rapido
