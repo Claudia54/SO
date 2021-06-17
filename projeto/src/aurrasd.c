@@ -18,6 +18,17 @@ char* filtroNome[2048];
 char* filtroApp[2048];
 
 int usersAlto = 0;
+int usersBaixo = 0;
+int usersEco = 0;
+int usersRapido = 0;
+int usersLento = 0;
+
+int usersAltoAux[2048];
+int usersBaixoAux[2048];
+int usersEcoAux[2048];
+int usersRapidoAux[2048];
+int usersLentoAux[2048];
+
 int iTask = 0;
 
 
@@ -65,8 +76,7 @@ void chld_handler(int sig){
 }
 
 void chld_handler_filtro(int sig){
-
-    usersAlto--;
+    
     wait(NULL);
 
 }
@@ -79,7 +89,7 @@ int main(int argc, char *argv[]) {
    
     int nargs;
     char** conf_args = parse_conf(&nargs ,argv[1]);
-    char* token;
+    
     int nFiltros = 0;
     for (int l=0;l < nargs ; l = l + 3){
         
@@ -101,6 +111,7 @@ int main(int argc, char *argv[]) {
         if(read(client_server_fifo, buffer, MESSAGESIZE)>0){ // le a msg do cliente
         
         if(strncmp(buffer, "transform", 9) == 0){
+
             char command[MESSAGESIZE];
             strcpy(command, buffer + 9);
             
@@ -148,19 +159,23 @@ int main(int argc, char *argv[]) {
 
             int pidaux;
             int status;
-
+            
             for (size_t k = 2; k < i; k++){
                 if (strcmp(args[k],"alto") == 0){
-
-                         usersAlto++;   
+                    usersAlto++;
+                    usersAltoAux++;
                 }else if (strcmp(args[k],"baixo") == 0){
-                       
+                    usersBaixo++;
+                    usersBaixoAux++;
                 }else if (strcmp(args[k],"eco") == 0){
-                        
+                    usersEco++;
+                    usersEcoAux++;         
                 }else if (strcmp(args[k],"rapido") == 0){
-                   
+                    usersRapido++;
+                    usersRapidoAux++;    
                 }else if (strcmp(args[k],"lento") == 0){
-                    
+                    usersLento++;
+                    usersLentoAux++;
                 }
             }
             
@@ -235,7 +250,7 @@ int main(int argc, char *argv[]) {
                 execl(folder,folder,NULL);
             }// if dentro 
             else{
-                signal(SIGCHLD,chld_handler_filtro);
+                //signal(SIGCHLD,chld_handler_filtro);
             } // else
             }  // for
             exit(0);
@@ -262,9 +277,13 @@ int main(int argc, char *argv[]) {
             
             }
             char message[64];
-
-            sprintf(message, "filter alto: %d\n",usersAlto);
+            for (int i = 0; i < nFiltros; i++)
+            {
+            
+            sprintf(message, "filter %s: 0/%d\n",filtroNome[i],filtroMaxValue[i]);
             write(server_client_fifo, message, strlen(message));
+            }
+            
             exit(0);
             }
             
