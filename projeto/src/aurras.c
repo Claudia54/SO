@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define MESSAGESIZE 4096
-#include "aurras.h"
 
 
 char* concat(int argc,char* argv[]){

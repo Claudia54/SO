@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <signal.h>
 #define MESSAGESIZE 4096
-#include "aurras.h"
 
 char* tasks[2048];
 int taskStatus[2048];
@@ -92,8 +91,6 @@ void chld_handler(int sig){
 
     pid_t pidfilho = wait(NULL);
     
-    int nargs;
-    char** conf_args = parse_conf(&nargs ,"./etc/state.conf");
     int i;
     for (i = 0; i < iTask; i++)
     {
