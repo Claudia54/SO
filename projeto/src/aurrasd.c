@@ -21,6 +21,7 @@ int numPids[2048];
 int lastProcess = 0;
 int tExec = -1;
 int tInac = -1;
+int iTask = 0;
 
 int pid;
 int pidOut;
@@ -38,13 +39,15 @@ int main(int argc, char const *argv[]) {
         int client_server_fifo = open("client_server_fifo", O_RDONLY);
         int server_client_fifo = open("server_client_fifo", O_WRONLY);
         
-        if(read(client_server_fifo, buffer, MESSAGESIZE)!=0) // le a msg do cliente
-        if((pidOut = fork()) == 0) {
+        if(read(client_server_fifo, buffer, MESSAGESIZE)!=0){ // le a msg do cliente
+            
+        tasks[iTask] = strdup(buffer);
+        
+        
         if(strncmp(buffer, "transform", 9) == 0){
             char command[MESSAGESIZE];
             strcpy(command, buffer + 9);
             //*iTask = *iTask + 1;
-            //tasks[*iTask] = strdup(buffer);
             //taskStatus[*iTask] = 0;
             
 
@@ -56,7 +59,6 @@ int main(int argc, char const *argv[]) {
             
             write(server_client_fifo, message, strlen(message));
             close(server_client_fifo);
-            close(client_server_fifo);
             char* token;
             char* args[1000];
             int i = 0;
@@ -121,7 +123,7 @@ int main(int argc, char const *argv[]) {
                         
                         close(ifd);
                         close(ofd);
-                        res = execl("../bin/aurrasd-filters/aurrasd-gain-double","../bin/aurrasd-filters/aurrasd-gain-double",NULL);
+                        res = execl("./bin/aurrasd-filters/aurrasd-gain-double","./bin/aurrasd-filters/aurrasd-gain-double",NULL);
                         
                        }
                        
@@ -158,7 +160,7 @@ int main(int argc, char const *argv[]) {
                         res = dup2(ofd,1);
                         close(ifd);
                         close(ofd);
-                        res = execl("../bin/aurrasd-filters/aurrasd-tempo-double","../bin/aurrasd-filters/aurrasd-tempo-double",NULL);
+                        res = execl("./bin/aurrasd-filters/aurrasd-tempo-double","./bin/aurrasd-filters/aurrasd-tempo-double",NULL);
                         
                        }
                 }else if (strcmp(args[j],"lento") == 0){
@@ -194,7 +196,7 @@ int main(int argc, char const *argv[]) {
                         res = dup2(ofd,1);
                         close(ifd);
                         close(ofd);
-                        res = execl("../bin/aurrasd-filters/aurrasd-tempo-half","../bin/aurrasd-filters/aurrasd-tempo-half",NULL);
+                        res = execl("./bin/aurrasd-filters/aurrasd-tempo-half","./bin/aurrasd-filters/aurrasd-tempo-half",NULL);
                         
                        }
                 }else if (strcmp(args[j],"eco") == 0){
@@ -230,7 +232,7 @@ int main(int argc, char const *argv[]) {
                         res = dup2(ofd,1);
                         close(ifd);
                         close(ofd);
-                        res = execl("../bin/aurrasd-filters/aurrasd-echo","../bin/aurrasd-filters/aurrasd-echo",NULL);
+                        res = execl("./bin/aurrasd-filters/aurrasd-echo","./bin/aurrasd-filters/aurrasd-echo",NULL);
                         
                        }
                 }else if (strcmp(args[j],"baixo") == 0){
@@ -266,7 +268,7 @@ int main(int argc, char const *argv[]) {
                         res = dup2(ofd,1);
                         close(ifd);
                         close(ofd);
-                        res = execl("../bin/aurrasd-filters/aurrasd-gain-half","../bin/aurrasd-filters/aurrasd-gain-half",NULL);
+                        res = execl("./bin/aurrasd-filters/aurrasd-gain-half","./bin/aurrasd-filters/aurrasd-gain-half",NULL);
                         
                        }
                 }
@@ -282,28 +284,30 @@ int main(int argc, char const *argv[]) {
 
         }else if(strncmp(buffer, "status",6) == 0){
             //printf("STATUS");
-
-            int server_client_pipe = open("server_client_fifo", O_WRONLY);
-            for (int i = 0; i < i; i++){
+            if((pidOut = fork()) == 0) {
+            //int server_client_pipe = open("server_client_fifo", O_WRONLY);
+            for (int i = 0; i < iTask; i++){
             
             char message[64];
             //if (taskStatus[i])
             sprintf(message, "task #%d: %s\n",i+1,tasks[i]);
-            
-            write(server_client_pipe, message, strlen(message));
+            //fprintf(1,"task");
+
+            write(server_client_fifo, message, strlen(message));
             }
-            close(server_client_pipe);
+            }
         }else {
             char buf[32];
             strcpy(buf, "\nComando inválido.\n\n");
             write(server_client_fifo, buf, strlen(buf));  
         }
+        iTask++;
         }
         free(buffer);
         close(server_client_fifo);
         close(client_server_fifo);
        // printf("%d\n",*iTask);
+    
     }
-   
     return 0;
 }
