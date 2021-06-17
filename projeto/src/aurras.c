@@ -1,50 +1,48 @@
 #include <unistd.h>
-#include <sys/wait.h>
+#include <fcntl.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <string.h>
+
+#include "argus.h"
 
 
-
-int my_system (char *line){
-    int result;
-    char *index;
-    int need_wait = 1; 
-    int status, pid;
-    if ((index = strchr (line,'&'))) {
-        need_wait = 0;
-        index[0] = 0;
+char* concat(int argc,char* argv[]){
+    int commandindex=1;
+    char* command = malloc(MESSAGESIZE);
+    
+    while ( commandindex<argc ){
+        strcat (command, argv[commandindex]);
+        strcat (command, " ");
+        commandindex++;
     }
-    if (!strcmp (line,"exit")) return -1;
-    char *words [1024];
-    int i = 0;
-    char* token;
-    char* rest = line;
-    while ((token = strtok_r(rest, " ", &rest)))
-        words[i++] = token;
-    if (!(pid = fork())){
-        words[i] = NULL;
-        result = execvp(words[0],words);
-    }
-    else
-        if (need_wait) waitpid (pid,&status,0);
-    return WEXITSTATUS(status);
+    return command;
 }
 
 
+int main(int argc, char *argv[]) {
+    char *string = malloc(MESSAGESIZE);
+    
+    
+    //argv[2] = "\"ls\"";
+    string = concat(argc,argv);
+    int bytesRead = strlen( string);
+     
+        if(string[bytesRead - 1] == '\n') string[--bytesRead] = 0;  // no fim da string poe NULL
+        
+        int client_server_fifo = open("client_server_fifo", O_WRONLY); // abrir pipes com nome
+        int server_client_fifo = open("server_client_fifo", O_RDONLY);
+
+        write(client_server_fifo, string, bytesRead);   // escreve para o pipe
+        close(client_server_fifo);                      // fecha o pipe
 
 
-int main (){
-    char str[1024];
-    int out = 0;
-    while (1){
-        printf ("Command Line:");
-        if (!fgets (str,sizeof(str),stdin))break;
-        char *line;
-        line = strtok (str,"\n");
-        if (line)
-            if (my_system (line)== -1) break;
-    }
+        // le o que vem do server
+        while((bytesRead = read(server_client_fifo, string, MESSAGESIZE)) > 0)
+            write(STDOUT_FILENO, string, bytesRead);            
+        close(server_client_fifo);
+
+    
+    
+    return 0;
 }
