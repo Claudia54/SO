@@ -182,10 +182,10 @@ int main(int argc, char *argv[]) {
                 }
             }
             int fd = open("./etc/state.conf", O_WRONLY);
-            char message[64];
-            sprintf(message, "%d\n",usersAlto);
+            char messag[64];
+            sprintf(messag, "%d\n",usersAlto);
             
-            write(fd, message, strlen(message));
+            write(fd, messag, strlen(messag));
 
             if((pid = fork()) == 0) {
 
