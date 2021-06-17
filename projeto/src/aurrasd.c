@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
         int client_server_fifo = open("client_server_fifo", O_RDONLY);
         int server_client_fifo = open("server_client_fifo", O_WRONLY);
         
-        if(read(client_server_fifo, buffer, MESSAGESIZE)!=0){ // le a msg do cliente
+        if(read(client_server_fifo, buffer, MESSAGESIZE)>0){ // le a msg do cliente
             
         tasks[iTask] = strdup(buffer);
         
@@ -49,7 +49,7 @@ int main(int argc, char const *argv[]) {
             strcpy(command, buffer + 9);
             //*iTask = *iTask + 1;
             //taskStatus[*iTask] = 0;
-            
+            iTask++;
 
             char message[64];
             sprintf(message, "pending\n");
@@ -284,7 +284,7 @@ int main(int argc, char const *argv[]) {
 
         }else if(strncmp(buffer, "status",6) == 0){
             //printf("STATUS");
-            if((pidOut = fork()) == 0) {
+            if(fork() == 0) {
             //int server_client_pipe = open("server_client_fifo", O_WRONLY);
             for (int i = 0; i < iTask; i++){
             
@@ -294,19 +294,30 @@ int main(int argc, char const *argv[]) {
             //fprintf(1,"task");
 
             write(server_client_fifo, message, strlen(message));
+            
             }
+            exit(0);
             }
+            //close(server_client_fifo);
+            
+            
         }else {
             char buf[32];
             strcpy(buf, "\nComando inválido.\n\n");
             write(server_client_fifo, buf, strlen(buf));  
         }
-        iTask++;
+        
         }
         free(buffer);
+             
+        char message[64];       
+        sprintf(message, "task -> %d\n",iTask);
+        
+            
+        write(server_client_fifo, message, strlen(message));
         close(server_client_fifo);
         close(client_server_fifo);
-       // printf("%d\n",*iTask);
+        
     
     }
     return 0;
