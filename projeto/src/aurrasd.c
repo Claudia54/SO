@@ -23,6 +23,9 @@ int usersEco = 0;
 int usersRapido = 0;
 int usersLento = 0;
 
+
+char* args[100];
+
 int usersAltoAux[2048];
 int usersBaixoAux[2048];
 int usersEcoAux[2048];
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
             close(server_client_fifo);
 
             char* token;
-            char* args[1000];
+            char* args[100];
             int i = 0;
             char* rest = command;
             char* tmp;
@@ -163,22 +166,27 @@ int main(int argc, char *argv[]) {
             for (size_t k = 2; k < i; k++){
                 if (strcmp(args[k],"alto") == 0){
                     usersAlto++;
-                    usersAltoAux++;
+                    //usersAltoAux++;
                 }else if (strcmp(args[k],"baixo") == 0){
                     usersBaixo++;
-                    usersBaixoAux++;
+                    //usersBaixoAux++;
                 }else if (strcmp(args[k],"eco") == 0){
                     usersEco++;
-                    usersEcoAux++;         
+                    //usersEcoAux++;         
                 }else if (strcmp(args[k],"rapido") == 0){
                     usersRapido++;
-                    usersRapidoAux++;    
+                    //usersRapidoAux++;    
                 }else if (strcmp(args[k],"lento") == 0){
                     usersLento++;
-                    usersLentoAux++;
+                    //usersLentoAux++;
                 }
             }
+            int fd = open("./etc/state.conf", O_WRONLY);
+            char message[64];
+            sprintf(message, "%d\n",usersAlto);
             
+            write(fd, message, strlen(message));
+
             if((pid = fork()) == 0) {
 
             for (int j=2; j<i;j++){
@@ -250,7 +258,7 @@ int main(int argc, char *argv[]) {
                 execl(folder,folder,NULL);
             }// if dentro 
             else{
-                //signal(SIGCHLD,chld_handler_filtro);
+                signal(SIGCHLD,chld_handler_filtro);
             } // else
             }  // for
             exit(0);
