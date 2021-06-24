@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
             strcpy(command, buffer + 9);
             
             taskStatus[iTask] = 0;
-            tasks[iTask] = strdup(buffer);// transform hasdjbasd hbasdhf eco eco eco
+            tasks[iTask] = strdup(buffer);// 'transform input output eco eco eco': buffer content example
             
             iTask++;
 
